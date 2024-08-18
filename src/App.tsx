@@ -11,9 +11,6 @@ function App() {
   const [newBlock, setNewBlock] = useState<string>("");
   const blocksId = useMemo(() => blocks.map((value) => value.id), [blocks]);
   const [tasks, setTasks] = useState([]);
-  const tasksIds = useMemo(() => {
-    return tasks.map((task) => task.id)
-  },[tasks])
   const [activeBlock, setActiveBlock] = useState(null);
   const [activeTask, setActiveTask] = useState(null);
   const sensors = useSensors(
@@ -29,6 +26,8 @@ function App() {
   function deleteBlock(header : string){
     const filteredBlocks = blocks.filter((block) => header !== block.header);
     setBlocks(filteredBlocks);
+    const filteredTasks =tasks.filter((task) => task.header !== header);
+    setTasks(filteredTasks);
   }
   function onDragStart(event : DragStartEvent){
     if (event.active.data.current?.type === 'block') {
@@ -40,7 +39,7 @@ function App() {
       return;
     }
   }
-  function addTask(task, header, tasks){
+  function addTask(task, header){
     if (task !== "") setTasks([...tasks, {id: Date.now(), header: header, task: task}]);
   }
   function deleteTask(id){
@@ -81,6 +80,7 @@ function App() {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((task) => task.id === activeId);
         const overIndex = tasks.findIndex((task) => task.id === overId);
+        tasks[activeIndex].header = tasks[overIndex].header;
         return arrayMove(tasks, activeIndex, overIndex);
       })
     }
@@ -89,7 +89,6 @@ function App() {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((task) => task.id === activeId);
         tasks[activeIndex].header = over.data.current?.block.header;
-        console.log(tasks);
         return arrayMove(tasks, activeIndex, activeIndex);
       })
     }
@@ -98,7 +97,7 @@ function App() {
     <div className="flex flex-col bg-[#F2F2F2] min-h-[100vh] font-dm-sans">
       <h1 className="text-center text-[64px] text-black">Manage your task</h1>
       <div className="ml-auto mr-auto flex text-[24px]">
-        <input className="rounded-xl w-full placeholder:pl-2 border-[2px] border-black" onChange={(e) => {setNewBlock(e.target.value)}} type="text" placeholder="Name of block" />
+        <input className="rounded-xl w-full pl-2 border-[2px] border-black" onChange={(e) => {setNewBlock(e.target.value)}} type="text" placeholder="Name of block" />
         <button className="bg-transparent ml-5" onClick={() => addBlock(newBlock)}>
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -108,12 +107,12 @@ function App() {
       <div className="flex flex-wrap w-full pr-5 pl-5">
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}>
           <SortableContext items={blocksId} strategy={horizontalListSortingStrategy}>
-            {blocks.map((block) => <Block key={block.id} block={block} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === block.header)} tasksIds={tasksIds} addTask={addTask} deleteTask={deleteTask} />)}
+            {blocks.map((block) => <Block key={block.id} block={block} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === block.header)} addTask={addTask} deleteTask={deleteTask} />)}
           </SortableContext>
           {
             createPortal(
               <DragOverlay>
-                {activeBlock && (<Block block={activeBlock} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === activeBlock.header)} tasksIds={tasksIds} addTask={addTask} deleteTask={deleteTask} />)}
+                {activeBlock && (<Block block={activeBlock} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === activeBlock.header)} addTask={addTask} deleteTask={deleteTask} />)}
                 {activeTask && (<Task task={activeTask} deleteTask={deleteTask}/>)}
               </DragOverlay>, document.body
             )

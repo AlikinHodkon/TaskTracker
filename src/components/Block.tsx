@@ -1,9 +1,9 @@
 import { CSS } from "@dnd-kit/utilities";
 import Task from "./Task"
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-export default function Block({block, deleteBlock, tasks, tasksIds, addTask, deleteTask}) {
+export default function Block({block, deleteBlock, tasks, addTask, deleteTask}) {
   const [value, setValue] = useState("");
   const {setNodeRef, attributes, listeners, transform, transition, isDragging} = useSortable({
     id: block.id,
@@ -16,12 +16,15 @@ export default function Block({block, deleteBlock, tasks, tasksIds, addTask, del
     transition,
     transform: CSS.Transform.toString(transform),
   }
+  const tasksIds = useMemo(() => {
+    return tasks.map((task) => task.id)
+  },[tasks])
   if (isDragging) {
-    return <div ref={setNodeRef} style={style} className="w-[30%] min-h-[15vh] min-w-[30vw] flex flex-col items-center opacity-40 border-[2px] border-black rounded-lg bg-white mt-5 ml-auto mr-auto pb-5"></div>
+    return <div ref={setNodeRef} style={style} className="w-[30%] h-[60vh] min-w-[30vw] flex flex-col items-center opacity-40 border-[2px] border-black rounded-lg bg-white mt-5 ml-auto mr-auto pb-5"></div>
   }
   return (
-    <div ref={setNodeRef} style={style} className="w-[30%] min-h-[15vh] min-w-[30vw] flex flex-col items-center rounded-lg bg-white mt-5 ml-auto mr-auto pb-5" {...attributes} {...listeners}>
-        <div className="flex w-full bg-blue-400">
+    <div ref={setNodeRef} style={style} className="w-[30%] min-w-[30vw] flex flex-col items-center rounded-lg bg-white mt-5 ml-auto mr-auto pb-5" {...attributes} {...listeners}>
+        <div className="flex w-full bg-blue-400 rounded-lg">
           <h1 className="text-[32px] w-full mr-auto ml-5">{block.header}</h1>
           <button className="mr-5" onClick={() => deleteBlock(block.header)}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
@@ -29,19 +32,21 @@ export default function Block({block, deleteBlock, tasks, tasksIds, addTask, del
             </svg>
           </button>
         </div>
+        <div className="w-full h-[45vh] overflow-auto">
             <ul className={`text-[24px] w-full h-full flex flex-col pl-5 pr-5 pb-5 bg-slate-white`}>
               <SortableContext items={tasksIds} strategy={verticalListSortingStrategy}>
                 {tasks.map((task) => <Task key={task.id} task={task} deleteTask={deleteTask}/>)}
               </SortableContext>
             </ul>
-            <div className="flex items-center justify-center mt-5">
-        <input className="placeholder:pl-2 border-[2px] border-black rounded-xl" onChange={(e) => {setValue(e.target.value)}} type="text" placeholder="Add task" />
-        <button onClick={() => {addTask(value, block.header, tasks)}} className="bg-white ml-5">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-        </button>
-      </div>
+        </div>
+        <div className="flex items-center justify-center mt-5">
+          <input className="pl-2 border-[2px] border-black rounded-xl" onChange={(e) => {setValue(e.target.value)}} type="text" placeholder="Add task" />
+          <button onClick={() => {addTask(value, block.header)}} className="bg-white ml-5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+          </button>
+        </div>
     </div>
   )
 }
