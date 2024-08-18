@@ -1,106 +1,28 @@
 import { useMemo, useState } from "react"
-import { closestCorners, DndContext, DragEndEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core"
+import { closestCorners, DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import Block from "./components/Block";
+import Task from "./components/Task";
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
+import { PointerSensor, useSensors, useSensor } from "@dnd-kit/core";
 
 function App() {
-  // const [toDo, setToDo] = useState([
-  //   {id: 1, header: "ToDo", task: "Buy Car"},
-  //   {id: 2, header: "ToDo", task: "Call Babushka"},
-  //   {id: 3, header: "ToDo", task: "Clean Home"}
-  // ]);
-  // const [inProgress, setInProgress] = useState([
-  //   {id: 4, header: "In progress", task: "Make breakfast"},
-  //   {id: 5, header: "In progress", task: "Brush Teeth"},
-  //   {id: 6, header: "In progress", task: "Wash Hands"}
-  // ]);
-  // const [done, setDone] = useState([
-  //   {id: 7, header: "Done", task: "Buy Phone"},
-  //   {id: 8, header: "Done", task: "Visit Doctor"},
-  //   {id: 9, header: "Done", task: "Fix Lamp"}
-  // ]);
   const [blocks, setBlocks] = useState([{id: 1, header: "ToDo"}, {id: 2, header: "In progress"}, {id: 3, header: "Done"}]);
   const [newBlock, setNewBlock] = useState<string>("");
   const blocksId = useMemo(() => blocks.map((value) => value.id), [blocks]);
+  const [tasks, setTasks] = useState([]);
+  const tasksIds = useMemo(() => {
+    return tasks.map((task) => task.id)
+  },[tasks])
   const [activeBlock, setActiveBlock] = useState(null);
-  // function handleDragEnd(event) {
-  //   if (event.over && event.over.id === 'ToDo' && event.over.id !== event.active.data.current?.header) {
-  //     setToDo([...toDo, {id: event.active.data.current?.id, header: "toDo", task: event.active.data.current?.task}]);
-  //     switch(event.active.data.current?.header){
-  //       case 'In progress':{
-  //         let i = 0;
-  //         let index : number = 0;
-  //         inProgress.forEach((element) => {
-  //           if (element.id === event.active.data.current?.id) index = i;
-  //           i++;
-  //         });
-  //         setInProgress([...inProgress.slice(0, index), ...inProgress.slice(index+1)])
-  //         break;
-  //       }
-  //       case 'Done':{
-  //         let i = 0;
-  //         let index : number = 0;
-  //         done.forEach((element) => {
-  //           if (element.id === event.active.data.current?.id) index = i;
-  //           i++;
-  //         });
-  //         setDone([...done.slice(0, index), ...done.slice(index+1)])
-  //         break;
-  //       }
-  //     }
-  //   }
-  //   if (event.over && event.over.id === 'In progress' && event.over.id !== event.active.data.current?.header) {
-  //     setInProgress([...inProgress, {id: event.active.data.current?.id, header: "In progress", task: event.active.data.current?.task}]);
-  //     switch(event.active.data.current?.header){
-  //       case 'ToDo':{
-  //         let i = 0;
-  //         let index : number = 0;
-  //         toDo.forEach((element) => {
-  //           if (element.id === event.active.data.current?.id) index = i;
-  //           i++;
-  //         });
-  //         setToDo([...toDo.slice(0, index), ...toDo.slice(index+1)])
-  //         break;
-  //       }
-  //       case 'Done':{
-  //         let i = 0;
-  //         let index : number = 0;
-  //         done.forEach((element) => {
-  //           if (element.id === event.active.data.current?.id) index = i;
-  //           i++;
-  //         });
-  //         setDone([...done.slice(0, index), ...done.slice(index+1)])
-  //         break;
-  //       }
-  //     }
-  //   }
-  //   if (event.over && event.over.id === 'Done' && event.over.id !== event.active.data.current?.header) {
-  //     setDone([...done, {id: event.active.data.current?.id, header: "Done", task: event.active.data.current?.task}]);
-  //     switch(event.active.data.current?.header){
-  //       case 'In progress':{
-  //         let i = 0;
-  //         let index : number = 0;
-  //         inProgress.forEach((element) => {
-  //           if (element.id === event.active.data.current?.id) index = i;
-  //           i++;
-  //         });
-  //         setInProgress([...inProgress.slice(0, index), ...inProgress.slice(index+1)])
-  //         break;
-  //       }
-  //       case 'ToDo':{
-  //         let i = 0;
-  //         let index : number = 0;
-  //         toDo.forEach((element) => {
-  //           if (element.id === event.active.data.current?.id) index = i;
-  //           i++;
-  //         });
-  //         setToDo([...toDo.slice(0, index), ...toDo.slice(index+1)])
-  //         break;
-  //       }
-  //     }
-  //   }
-  // }
+  const [activeTask, setActiveTask] = useState(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+      distance: 1,
+      }
+    })
+  )
   function addBlock(header : string){
     if (header !== "") setBlocks([...blocks, {id: Date.now(), header: header}]);
   }
@@ -113,8 +35,21 @@ function App() {
       setActiveBlock(event.active.data.current.block);
       return;
     }
+    if (event.active.data.current?.type === 'task') {
+      setActiveTask(event.active.data.current.task);
+      return;
+    }
+  }
+  function addTask(task, header, tasks){
+    if (task !== "") setTasks([...tasks, {id: Date.now(), header: header, task: task}]);
+  }
+  function deleteTask(id){
+    const filteredTasks = tasks.filter((value) => id !== value.id);
+    setTasks(filteredTasks);
   }
   function onDragEnd(event: DragEndEvent){
+    setActiveBlock(null);
+    setActiveTask(null);
     const { active, over} = event;
     if (!over) return;
 
@@ -129,6 +64,35 @@ function App() {
       
       return arrayMove(blocks, activeBlockIndex, overBlockIndex);
     })
+  }  
+  function onDragOver(event: DragOverEvent){
+    const { active, over} = event;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    if (activeId === overId) return;
+
+    const isActiveTask = active.data.current?.type === "task";
+    const isOverTask = over.data.current?.type === 'task';
+    if (!isActiveTask) return;
+    if (isActiveTask && isOverTask){
+      setTasks((tasks) => {
+        const activeIndex = tasks.findIndex((task) => task.id === activeId);
+        const overIndex = tasks.findIndex((task) => task.id === overId);
+        return arrayMove(tasks, activeIndex, overIndex);
+      })
+    }
+    const isOverBlock = over.data.current?.type === 'block';
+    if (isActiveTask && isOverBlock){
+      setTasks((tasks) => {
+        const activeIndex = tasks.findIndex((task) => task.id === activeId);
+        tasks[activeIndex].header = over.data.current?.block.header;
+        console.log(tasks);
+        return arrayMove(tasks, activeIndex, activeIndex);
+      })
+    }
   }
   return (
     <div className="flex flex-col bg-[#F2F2F2] min-h-[100vh] font-dm-sans">
@@ -142,14 +106,15 @@ function App() {
         </button>
       </div>
       <div className="flex flex-wrap w-full pr-5 pl-5">
-        <DndContext collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}>
           <SortableContext items={blocksId} strategy={horizontalListSortingStrategy}>
-            {blocks.map((block) => <Block key={block.id} block={block} deleteBlock={deleteBlock} />)}
+            {blocks.map((block) => <Block key={block.id} block={block} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === block.header)} tasksIds={tasksIds} addTask={addTask} deleteTask={deleteTask} />)}
           </SortableContext>
           {
             createPortal(
               <DragOverlay>
-                {activeBlock && (<Block block={activeBlock} deleteBlock={deleteBlock} />)}
+                {activeBlock && (<Block block={activeBlock} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === activeBlock.header)} tasksIds={tasksIds} addTask={addTask} deleteTask={deleteTask} />)}
+                {activeTask && (<Task task={activeTask} deleteTask={deleteTask}/>)}
               </DragOverlay>, document.body
             )
           }
