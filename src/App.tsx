@@ -5,14 +5,15 @@ import Task from "./components/Task";
 import { arrayMove, horizontalListSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import { PointerSensor, useSensors, useSensor } from "@dnd-kit/core";
+import { IBlock, ITask } from "./types";
 
 function App() {
-  const [blocks, setBlocks] = useState([{id: 1, header: "ToDo"}, {id: 2, header: "In progress"}, {id: 3, header: "Done"}]);
+  const [blocks, setBlocks] = useState<IBlock[]>([{id: 1, header: "ToDo"}, {id: 2, header: "In progress"}, {id: 3, header: "Done"}]);
   const [newBlock, setNewBlock] = useState<string>("");
-  const blocksId = useMemo(() => blocks.map((value) => value.id), [blocks]);
-  const [tasks, setTasks] = useState([]);
-  const [activeBlock, setActiveBlock] = useState(null);
-  const [activeTask, setActiveTask] = useState(null);
+  const blocksId: number[] = useMemo<number[]>(() => blocks.map((value) => value.id), [blocks]);
+  const [tasks, setTasks] = useState<ITask[]>([]);
+  const [activeBlock, setActiveBlock] = useState<IBlock | null>(null);
+  const [activeTask, setActiveTask] = useState<ITask | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -20,16 +21,16 @@ function App() {
       }
     })
   )
-  function addBlock(header : string){
+  function addBlock(header: string){
     if (header !== "") setBlocks([...blocks, {id: Date.now(), header: header}]);
   }
-  function deleteBlock(header : string){
+  function deleteBlock(header: string){
     const filteredBlocks = blocks.filter((block) => header !== block.header);
     setBlocks(filteredBlocks);
     const filteredTasks =tasks.filter((task) => task.header !== header);
     setTasks(filteredTasks);
   }
-  function onDragStart(event : DragStartEvent){
+  function onDragStart(event: DragStartEvent){
     if (event.active.data.current?.type === 'block') {
       setActiveBlock(event.active.data.current.block);
       return;
@@ -39,10 +40,10 @@ function App() {
       return;
     }
   }
-  function addTask(task, header){
+  function addTask(task: string, header: string){
     if (task !== "") setTasks([...tasks, {id: Date.now(), header: header, task: task}]);
   }
-  function deleteTask(id){
+  function deleteTask(id: number){
     const filteredTasks = tasks.filter((value) => id !== value.id);
     setTasks(filteredTasks);
   }

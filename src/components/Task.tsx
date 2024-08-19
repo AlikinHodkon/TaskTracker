@@ -1,7 +1,13 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { ITask } from "../types";
 
-export default function Task({task, deleteTask}) {
+interface ITaskProps{
+  task: ITask,
+  deleteTask: (id: number) => void
+}
+
+export default function Task({task, deleteTask}: ITaskProps ) {
 
     const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
       id: task.id,

@@ -2,8 +2,16 @@ import { CSS } from "@dnd-kit/utilities";
 import Task from "./Task"
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
+import { IBlock, ITask } from "../types";
+interface IBlockProps{
+  block: IBlock,
+  deleteBlock: (header: string) => void,
+  tasks: ITask[],
+  addTask: (task: string, header: string) => void,
+  deleteTask: (id: number) => void
+}
 
-export default function Block({block, deleteBlock, tasks, addTask, deleteTask}) {
+export default function Block({block, deleteBlock, tasks, addTask, deleteTask}: IBlockProps) {
   const [value, setValue] = useState("");
   const {setNodeRef, attributes, listeners, transform, transition, isDragging} = useSortable({
     id: block.id,
@@ -16,7 +24,7 @@ export default function Block({block, deleteBlock, tasks, addTask, deleteTask}) 
     transition,
     transform: CSS.Transform.toString(transform),
   }
-  const tasksIds = useMemo(() => {
+  const tasksIds: number[] = useMemo<number[]>(() => {
     return tasks.map((task) => task.id)
   },[tasks])
   if (isDragging) {
