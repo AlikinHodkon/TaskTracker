@@ -28,10 +28,10 @@ export default function Block({block, deleteBlock, tasks, addTask, deleteTask}: 
     return tasks.map((task) => task.id)
   },[tasks])
   if (isDragging) {
-    return <div ref={setNodeRef} style={style} className="md:w-[30%] w-full h-[60vh] md:min-w-[30vw] flex flex-col items-center opacity-40 border-[2px] border-black rounded-lg bg-white mt-5 ml-auto mr-auto pb-5"></div>
+    return <div ref={setNodeRef} style={style} className="md:w-[30%] w-[80%] min-w-[80%] h-[60vh] md:min-w-[30vw] flex flex-col items-center opacity-40 border-[2px] border-black rounded-lg bg-white mt-5 ml-auto mr-auto pb-5"></div>
   }
   return (
-    <div ref={setNodeRef} style={style} className="md:w-[30%] w-full md:min-w-[30vw] flex flex-col items-center touch-none rounded-lg bg-white mt-5 ml-auto mr-auto pb-5" {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className="md:w-[30%] min-w-[80%] md:min-w-[30vw] flex flex-col items-center touch-none rounded-lg bg-white mt-5 ml-auto mr-auto mb-5 pb-5" {...attributes} {...listeners}>
         <div className="flex w-full bg-blue-400 rounded-lg">
           <h1 className="text-[32px] w-full mr-auto ml-5">{block.header}</h1>
           <button className="mr-5" onClick={() => deleteBlock(block.header)}>
