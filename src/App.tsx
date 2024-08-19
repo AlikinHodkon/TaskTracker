@@ -109,7 +109,7 @@ function App() {
           </svg>
         </button>
       </div>
-      <div className="flex flex-wrap w-full pr-5 pl-5">
+      <div className="flex flex-wrap flex-col md:flex-row w-full pr-5 pl-5">
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}>
           <SortableContext items={blocksId} strategy={horizontalListSortingStrategy}>
             {blocks.map((block) => <Block key={block.id} block={block} deleteBlock={deleteBlock} tasks={tasks.filter((task) => task.header === block.header)} addTask={addTask} deleteTask={deleteTask} />)}

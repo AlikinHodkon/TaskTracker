@@ -26,7 +26,7 @@ export default function Task({task, deleteTask}: ITaskProps ) {
       }
 
   return (
-    <li ref={setNodeRef} style={style} className="w-full flex min-h-[5vh] text-[24px] font-dm-sans bg-gray-300 mt-5 pl-5 pr-5 rounded-lg" {...attributes} {...listeners}>
+    <li ref={setNodeRef} style={style} className="w-full flex touch-none min-h-[5vh] text-[24px] font-dm-sans bg-gray-300 mt-5 pl-5 pr-5 rounded-lg" {...attributes} {...listeners}>
       <p>{task.task}</p>
       <button onClick={() => deleteTask(task.id)} className="ml-auto">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
