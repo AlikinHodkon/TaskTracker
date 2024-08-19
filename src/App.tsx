@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { closestCorners, DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import Block from "./components/Block";
 import Task from "./components/Task";
@@ -8,12 +8,16 @@ import { PointerSensor, useSensors, useSensor } from "@dnd-kit/core";
 import { IBlock, ITask } from "./types";
 
 function App() {
-  const [blocks, setBlocks] = useState<IBlock[]>([{id: 1, header: "ToDo"}, {id: 2, header: "In progress"}, {id: 3, header: "Done"}]);
+  const [blocks, setBlocks] = useState<IBlock[]>(localStorage.getItem('blocks') ? JSON.parse(localStorage.getItem('blocks') || "") : [{id: 1, header: "ToDo"}, {id: 2, header: "In progress"}, {id: 3, header: "Done"}]);
   const [newBlock, setNewBlock] = useState<string>("");
   const blocksId: number[] = useMemo<number[]>(() => blocks.map((value) => value.id), [blocks]);
-  const [tasks, setTasks] = useState<ITask[]>([]);
+  const [tasks, setTasks] = useState<ITask[]>(localStorage.getItem('tasks') ? JSON.parse(localStorage.getItem('tasks') || "") : []);
   const [activeBlock, setActiveBlock] = useState<IBlock | null>(null);
   const [activeTask, setActiveTask] = useState<ITask | null>(null);
+  useEffect(() => {
+    localStorage.setItem('blocks', JSON.stringify(blocks));
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [blocks, tasks])
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
